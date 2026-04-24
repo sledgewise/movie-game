@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Movie Game</title>
+<style>
+body {
+  font-family: Arial;
+  background: #121212;
+  color: white;
+  text-align: center;
+}
+img {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 10px;
+}
+button {
+  width: 45%;
+  margin: 5px;
+  padding: 10px;
+  font-size: 16px;
+}
+.correct { background: green; }
+.wrong { background: red; }
+</style>
+</head>
+
+<body>
+
+<h2>🎬 Guess the Movie</h2>
+<p id="score">Score: 0</p>
+
+<img id="movieImg" src="">
+<br><br>
+
+<div id="buttons"></div>
+
+<p id="result"></p>
+
+<script>
+const movies = [
+  {
+    img: "https://upload.wikimedia.org/wikipedia/en/8/8e/Cinema_Paradiso.jpg",
+    options: ["Casablanca", "Cinema Paradiso"],
+    answer: "Cinema Paradiso"
+  },
+  {
+    img: "https://upload.wikimedia.org/wikipedia/en/c/c1/The_Matrix_Poster.jpg",
+    options: ["The Matrix", "Blade Runner"],
+    answer: "The Matrix"
+  }
+];
+
+let index = 0;
+let score = 0;
+
+function loadQuestion() {
+  let m = movies[index];
+  document.getElementById("movieImg").src = m.img;
+  document.getElementById("result").innerText = "";
+
+  let btns = "";
+  m.options.forEach(opt => {
+    btns += `<button onclick="guess('${opt}')">${opt}</button>`;
+  });
+  document.getElementById("buttons").innerHTML = btns;
+}
+
+function guess(choice) {
+  let correct = movies[index].answer;
+
+  if (choice === correct) {
+    score++;
+    document.getElementById("result").innerText = "Correct!";
+  } else {
+    document.getElementById("result").innerText = "Wrong! " + correct;
+  }
+
+  document.getElementById("score").innerText = "Score: " + score;
+
+  index++;
+  if (index < movies.length) {
+    setTimeout(loadQuestion, 1000);
+  } else {
+    document.body.innerHTML = "<h2>Game Over</h2><p>Score: " + score + "</p>";
+  }
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
