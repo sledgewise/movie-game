@@ -1,93 +1,423 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Movie Game</title>
-<style>
-body {
-  font-family: Arial;
-  background: #121212;
-  color: white;
-  text-align: center;
-}
-img {
-  width: 100%;
-  max-width: 300px;
-  border-radius: 10px;
-}
-button {
-  width: 45%;
-  margin: 5px;
-  padding: 10px;
-  font-size: 16px;
-}
-.correct { background: green; }
-.wrong { background: red; }
-</style>
-</head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Cinema Still Guesser • Movie Quiz</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    body {
+      background: linear-gradient(145deg, #0b0c0e 0%, #1a1e24 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 0.5rem;
+      margin: 0;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 550px;
+      background: rgba(20, 22, 27, 0.95);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 1.5rem;
+      padding: 1.2rem 1rem 1.8rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      margin: 0.5rem auto;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    h1 {
+      font-weight: 600;
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      letter-spacing: 1px;
+      color: #f0d78c;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    }
+
+    .badge {
+      background: #d4af37;
+      color: #0a0c0f;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.7rem;
+      border-radius: 20px;
+      margin-left: 0.3rem;
+    }
+
+    .score-badge {
+      background: #2c2f36;
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      font-weight: 700;
+      color: #f7e05e;
+      font-size: 0.9rem;
+    }
+
+    .question-track {
+      background: #2f333b;
+      padding: 0.4rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: #ddd;
+    }
+
+    .still-wrapper {
+      width: 100%;
+      border-radius: 1rem;
+      overflow: hidden;
+      margin: 0.8rem 0 1.2rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.7), 0 0 0 2px rgba(212, 175, 55, 0.3);
+      background: #0d0f13;
+    }
+
+    .still-wrapper img {
+      width: 100%;
+      height: auto;
+      display: block;
+      min-height: 200px;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .still-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 220px;
+      background: #1a1d24;
+      color: #aaa;
+      font-size: 1rem;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.7rem;
+      width: 100%;
+      margin: 0.5rem 0 1rem;
+    }
+
+    .option-btn {
+      background: rgba(30, 34, 41, 0.9);
+      border: 2px solid #3a3f4b;
+      padding: 0.9rem 0.5rem;
+      border-radius: 1rem;
+      color: #f0f0f0;
+      font-weight: 600;
+      font-size: clamp(0.8rem, 3.5vw, 0.95rem);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      word-break: break-word;
+      line-height: 1.3;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .option-btn:active:not(:disabled) { transform: scale(0.97); background: #2f3744; }
+    .option-btn.correct { background: #1a5c32 !important; border-color: #4caf50 !important; color: #fff !important; box-shadow: 0 0 15px #28a745; }
+    .option-btn.wrong { background: #5c2b2b !important; border-color: #d32f2f !important; color: #ffb3b3 !important; }
+    .option-btn:disabled { opacity: 0.85; cursor: default; }
+
+    .feedback {
+      text-align: center;
+      min-height: 1.8rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #ececec;
+      margin: 0.2rem 0;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .next-btn {
+      background: linear-gradient(180deg, #f5cd5c 0%, #b68b2c 100%);
+      border: none;
+      color: #0a0c0f;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 0.8rem 2.5rem;
+      border-radius: 2.5rem;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(212, 175, 55, 0.4);
+      text-transform: uppercase;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .next-btn:disabled { opacity: 0.5; background: #555; color: #333; pointer-events: none; }
+
+    .restart-btn {
+      background: #2a2d35;
+      border: 1px solid #555;
+      color: #ddd;
+      padding: 0.5rem 1.3rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.9rem;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .credit { text-align: center; color: #555; font-size: 0.65rem; margin-top: 0.8rem; }
+
+    @media (max-width: 400px) {
+      .options-grid { gap: 0.5rem; }
+      .option-btn { padding: 0.75rem 0.3rem; font-size: 0.8rem; }
+      .game-container { padding: 0.8rem 0.7rem 1.2rem; }
+    }
+  </style>
+</head>
 <body>
 
-<h2>🎬 Guess the Movie</h2>
-<p id="score">Score: 0</p>
+<div class="game-container">
+  <div class="header-row">
+    <h1>🎬 STILLS<span class="badge">QUIZ</span></h1>
+    <div style="display:flex;gap:0.5rem;">
+      <span class="score-badge" id="scoreDisplay">🏆 0</span>
+      <span class="question-track" id="questionCounter">1/10</span>
+    </div>
+  </div>
 
-<img id="movieImg" src="">
-<br><br>
+  <div class="still-wrapper" id="stillContainer">
+    <div class="still-fallback">🎞️ Loading still...</div>
+  </div>
 
-<div id="buttons"></div>
+  <div class="options-grid" id="optionsContainer"></div>
+  <div class="feedback" id="feedbackMessage"></div>
 
-<p id="result"></p>
+  <div class="btn-row">
+    <button class="next-btn" id="nextButton" disabled>NEXT ▸</button>
+    <button class="restart-btn" id="restartButton">↺ New Game</button>
+  </div>
+  <div class="credit">Screenshots via FILMGRAB • film-grab.com</div>
+</div>
 
 <script>
-const movies = [
-  {
-    img: "https://upload.wikimedia.org/wikipedia/en/8/8e/Cinema_Paradiso.jpg",
-    options: ["Casablanca", "Cinema Paradiso"],
-    answer: "Cinema Paradiso"
-  },
-  {
-    img: "https://upload.wikimedia.org/wikipedia/en/c/c1/The_Matrix_Poster.jpg",
-    options: ["The Matrix", "Blade Runner"],
-    answer: "The Matrix"
+(function() {
+  // ──────────────────────────────────────
+  // MOVIE DATABASE – FILMGRAB SCREENSHOTS
+  // Images are actual film frames from film-grab.com
+  // ──────────────────────────────────────
+  const moviePool = [
+    {
+      title: "JFK",
+      still: "https://film-grab.com/wp-content/uploads/photo-gallery/JFK%20(1991)%20-%20Oliver%20Stone/001.jpg",
+      options: ["JFK", "The Town", "Salvador", "Platoon"]
+    },
+    {
+      title: "Scanners",
+      still: "https://film-grab.com/wp-content/uploads/photo-gallery/Scanners%20(1981)%20-%20David%20Cronenberg/001.jpg",
+      options: ["Scanners", "Videodrome", "The Fly", "Existenz"]
+    },
+    {
+      title: "Time Bandits",
+      still: "https://film-grab.com/wp-content/uploads/photo-gallery/Time%20Bandits%20(1981)%20-%20Terry%20Gilliam/001.jpg",
+      options: ["Time Bandits", "Jabberwocky", "Brazil", "The Adventures of Baron Munchausen"]
+    },
+    {
+      title: "Chloe",
+      still: "https://film-grab.com/wp-content/uploads/photo-gallery/Chloe%20(2009)%20-%20Atom%20Egoyan/001.jpg",
+      options: ["Chloe", "The Sweet Hereafter", "Exotica", "Where the Truth Lies"]
+    },
+    {
+      title: "Matewan",
+      still: "https://film-grab.com/wp-content/uploads/photo-gallery/Matewan%20(1987)%20-%20John%20Sayles/001.jpg",
+      options: ["Matewan", "Limbo", "Lone Star", "Passion Fish"]
+    },
+    {
+      title: "Be Kind Rewind",
+      still: "https://film-grab.com/wp-content/uploads/photo-gallery/Be%20Kind%20Rewind%20(2008)%20-%20Michel%20Gondry/001.jpg",
+      options: ["Be Kind Rewind", "Eternal Sunshine of the Spotless Mind", "The Science of Sleep", "The Green Hornet"]
+    },
+    {
+      title: "The East",
+      still: "https://film-grab.com/wp-content/uploads/photo-gallery/The%20East%20(2013)%20-%20Zal%20Batmanglij/001.jpg",
+      options: ["The East", "Sound of My Voice", "The OA", "Another Earth"]
+    },
+    {
+      title: "Camera Buff",
+      still: "https://film-grab.com/wp-content/uploads/photo-gallery/Camera%20Buff%20(1979)%20-%20Krzysztof%20Kieslowski/001.jpg",
+      options: ["Camera Buff", "Blind Chance", "No End", "A Short Film About Love"]
+    },
+    {
+      title: "Le Cercle Rouge",
+      still: "https://film-grab.com/wp-content/uploads/photo-gallery/Le%20Cercle%20Rouge%20(1970)%20-%20Jean-Pierre%20Melville/001.jpg",
+      options: ["Le Cercle Rouge", "Bob le Flambeur", "Un Flic", "Le Samouraï"]
+    },
+    {
+      title: "Phenomena",
+      still: "https://film-grab.com/wp-content/uploads/photo-gallery/Phenomena%20(1985)%20-%20Dario%20Argento/001.jpg",
+      options: ["Phenomena", "Suspiria", "Deep Red", "Tenebrae"]
+    },
+    {
+      title: "The Town",
+      still: "https://film-grab.com/wp-content/uploads/photo-gallery/The%20Town%20(2010)%20-%20Ben%20Affleck/001.jpg",
+      options: ["The Town", "Gone Baby Gone", "Argo", "Live by Night"]
+    },
+    {
+      title: "Targets",
+      still: "https://film-grab.com/wp-content/uploads/photo-gallery/Targets%20(1968)%20-%20Peter%20Bogdanovich/001.jpg",
+      options: ["Targets", "The Last Picture Show", "Paper Moon", "What's Up, Doc?"]
+    }
+  ];
+
+  // ──────────────────────────────────────
+  // GAME STATE
+  // ──────────────────────────────────────
+  const TOTAL = 10;
+  let questions = [];
+  let idx = 0;
+  let score = 0;
+  let chosen = null;
+  let locked = false;
+
+  const stillContainer = document.getElementById('stillContainer');
+  const optionsEl = document.getElementById('optionsContainer');
+  const nextBtn = document.getElementById('nextButton');
+  const scoreEl = document.getElementById('scoreDisplay');
+  const counterEl = document.getElementById('questionCounter');
+  const feedbackEl = document.getElementById('feedbackMessage');
+  const restartBtn = document.getElementById('restartButton');
+
+  const shuffle = arr => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
+  function buildQuestions() {
+    const picks = shuffle(moviePool).slice(0, TOTAL);
+    return picks.map(m => ({
+      title: m.title,
+      still: m.still,
+      shuffledOpts: shuffle(m.options)
+    }));
   }
-];
 
-let index = 0;
-let score = 0;
-
-function loadQuestion() {
-  let m = movies[index];
-  document.getElementById("movieImg").src = m.img;
-  document.getElementById("result").innerText = "";
-
-  let btns = "";
-  m.options.forEach(opt => {
-    btns += `<button onclick="guess('${opt}')">${opt}</button>`;
-  });
-  document.getElementById("buttons").innerHTML = btns;
-}
-
-function guess(choice) {
-  let correct = movies[index].answer;
-
-  if (choice === correct) {
-    score++;
-    document.getElementById("result").innerText = "Correct!";
-  } else {
-    document.getElementById("result").innerText = "Wrong! " + correct;
+  function resetGame() {
+    questions = buildQuestions();
+    idx = 0;
+    score = 0;
+    locked = false;
+    chosen = null;
+    render();
+    nextBtn.disabled = true;
+    feedbackEl.textContent = '';
   }
 
-  document.getElementById("score").innerText = "Score: " + score;
-
-  index++;
-  if (index < movies.length) {
-    setTimeout(loadQuestion, 1000);
-  } else {
-    document.body.innerHTML = "<h2>Game Over</h2><p>Score: " + score + "</p>";
+  function updateHUD() {
+    scoreEl.textContent = `🏆 ${score}`;
+    counterEl.textContent = `${idx + 1}/${TOTAL}`;
   }
-}
 
-loadQuestion();
+  function render() {
+    if (!questions.length || idx >= questions.length) return;
+    const q = questions[idx];
+
+    stillContainer.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = q.still;
+    img.alt = 'Movie still from ' + q.title;
+    img.loading = 'eager';
+    img.onerror = function() {
+      stillContainer.innerHTML = '';
+      const fb = document.createElement('div');
+      fb.className = 'still-fallback';
+      fb.innerHTML = '🎞️ Still unavailable<br><small>Try refreshing</small>';
+      stillContainer.appendChild(fb);
+    };
+    stillContainer.appendChild(img);
+
+    optionsEl.innerHTML = '';
+    q.shuffledOpts.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = opt;
+      btn.dataset.index = i;
+      if (locked) {
+        btn.disabled = true;
+        if (opt === q.title) btn.classList.add('correct');
+        else if (chosen === i && opt !== q.title) btn.classList.add('wrong');
+      } else {
+        btn.addEventListener('click', () => handleChoose(i, opt));
+      }
+      optionsEl.appendChild(btn);
+    });
+
+    if (locked && chosen !== null) {
+      const btns = optionsEl.querySelectorAll('.option-btn');
+      if (btns[chosen] && q.shuffledOpts[chosen] !== q.title) {
+        btns[chosen].classList.add('wrong');
+      }
+    }
+
+    updateHUD();
+    nextBtn.disabled = !locked;
+
+    if (locked && chosen !== null) {
+      feedbackEl.textContent = q.shuffledOpts[chosen] === q.title
+        ? '✅ Correct! Great eye for cinema!'
+        : `❌ Wrong! It was "${q.title}"`;
+    } else {
+      feedbackEl.textContent = '';
+    }
+  }
+
+  function handleChoose(i, opt) {
+    if (locked) return;
+    locked = true;
+    chosen = i;
+    if (opt === questions[idx].title) score++;
+    render();
+  }
+
+  function goNext() {
+    if (!locked) return;
+    if (idx < TOTAL - 1) {
+      idx++;
+      locked = false;
+      chosen = null;
+      render();
+      nextBtn.disabled = true;
+      feedbackEl.textContent = '';
+    } else {
+      feedbackEl.textContent = `🎬 Game Over! Final Score: ${score}/${TOTAL}`;
+      nextBtn.disabled = true;
+    }
+  }
+
+  nextBtn.addEventListener('click', goNext);
+  restartBtn.addEventListener('click', resetGame);
+
+  resetGame();
+})();
 </script>
 
 </body>
